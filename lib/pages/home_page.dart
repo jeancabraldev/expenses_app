@@ -80,12 +80,10 @@ class _HomePageState extends State<HomePage> {
                   (BuildContext context, AsyncSnapshot<QuerySnapshot> data) {
                 //Verificando se tem dados
                 if (data.hasData) {
-                  return Month(
-                      documents: data.data.documents
-                  );
+                  return Month(documents: data.data.documents);
                 }
                 return Container(
-                  height: MediaQuery.of(context).size.height -154,
+                  height: MediaQuery.of(context).size.height - 154,
                   child: Center(
                     child: CircularProgressIndicator(),
                   ),
@@ -113,7 +111,7 @@ class _HomePageState extends State<HomePage> {
         color: Colors.purple[900], fontSize: 18, fontWeight: FontWeight.bold);
     //Desfacando os meses que não estão selecionados
     final unSelected =
-    TextStyle(fontSize: 16, color: Colors.black26.withOpacity(.2));
+        TextStyle(fontSize: 16, color: Colors.black26.withOpacity(.2));
 
     /*Verificando se a posição é igual a página selecionada,
     cajo seja verdadeiro o conteúdo será centralizado*/

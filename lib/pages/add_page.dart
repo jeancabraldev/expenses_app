@@ -12,7 +12,7 @@ class AddPage extends StatefulWidget {
 
 class _AddPageState extends State<AddPage> {
   String category;
-  double value = 0;
+  int value = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,11 +55,23 @@ class _AddPageState extends State<AddPage> {
       height: 80,
       child: CategorySelectionWidget(
         categories: {
-          'Despesas': Icons.attach_money,
+          'Games': Icons.games,
           'Shopping': Icons.shopping_cart,
+          'Restaurantes': Icons.restaurant,
+          'Pizzaria': Icons.local_pizza,
           'Bebidas': FontAwesomeIcons.beer,
-          'Fast Food': FontAwesomeIcons.hamburger,
+          'Fast Food': Icons.fastfood,
           'Contas': Icons.account_balance_wallet,
+          'Viagens': Icons.airplanemode_active,
+          'Eletrônicos': Icons.phonelink,
+          'Transporte': Icons.directions_bus,
+          'Bares': Icons.local_bar,
+          'Combustível': Icons.local_gas_station,
+          'Lava Rápido': Icons.local_car_wash,
+          'Cinema': Icons.local_movies,
+          'Hospital': Icons.local_hospital,
+          'Farmácia': Icons.local_pharmacy,
+          'Taxi': Icons.local_taxi
         },
         //Mostrando a categoria selecionada
         onValueChanged: (newCategory) => category = newCategory,
@@ -68,9 +80,10 @@ class _AddPageState extends State<AddPage> {
   }
 
   Widget _currentValue() {
+    var realValue = value / 100.0;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 32),
-      child: Text('R\$ ${value.toStringAsFixed(2)}',
+      child: Text('R\$ ${realValue.toStringAsFixed(2)}',
           style: TextStyle(
               fontSize: 48, fontWeight: FontWeight.w500, color: Colors.purple)),
     );
@@ -82,14 +95,18 @@ class _AddPageState extends State<AddPage> {
       behavior: HitTestBehavior.opaque,
       onTap: () {
         setState(() {
-          value = value * 10 + int.parse(text);
+          if (text == ',') {
+            value = value * 100;
+          } else {
+            value = value * 10 + int.parse(text);
+          }
         });
       },
       child: Container(
           height: height,
           child: Center(
             child:
-            Text(text, style: TextStyle(fontSize: 40, color: Colors.grey)),
+                Text(text, style: TextStyle(fontSize: 40, color: Colors.grey)),
           )),
     );
   }
@@ -98,49 +115,49 @@ class _AddPageState extends State<AddPage> {
   Widget _numPad() {
     return Expanded(child: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
-          var height = constraints.biggest.height / 4;
-          return Table(
-            border: TableBorder.all(
-              color: Colors.grey,
-              width: 1,
-            ),
-            children: [
-              TableRow(children: [
-                _num('1', height),
-                _num('2', height),
-                _num('3', height),
-              ]),
-              TableRow(children: [
-                _num('4', height),
-                _num('5', height),
-                _num('6', height),
-              ]),
-              TableRow(children: [
-                _num('7', height),
-                _num('8', height),
-                _num('9', height),
-              ]),
-              TableRow(children: [
-                _num(',', height),
-                _num('0', height),
-                GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () {
-                    setState(() {
-                      value = value ~/ 10 + (value - value.toInt());
-                    });
-                  },
-                  child: Container(
-                    height: height,
-                    child: Center(
-                      child: Icon(Icons.backspace, color: Colors.grey, size: 28),
-                    ),
-                  ),
+      var height = constraints.biggest.height / 4;
+      return Table(
+        border: TableBorder.all(
+          color: Colors.grey,
+          width: 1,
+        ),
+        children: [
+          TableRow(children: [
+            _num('1', height),
+            _num('2', height),
+            _num('3', height),
+          ]),
+          TableRow(children: [
+            _num('4', height),
+            _num('5', height),
+            _num('6', height),
+          ]),
+          TableRow(children: [
+            _num('7', height),
+            _num('8', height),
+            _num('9', height),
+          ]),
+          TableRow(children: [
+            _num(',', height),
+            _num('0', height),
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                setState(() {
+                  value = value ~/ 10;
+                });
+              },
+              child: Container(
+                height: height,
+                child: Center(
+                  child: Icon(Icons.backspace, color: Colors.grey, size: 28),
                 ),
-              ])
-            ],
-          );
-        }));
+              ),
+            ),
+          ])
+        ],
+      );
+    }));
   }
 
   Widget _submit() {
