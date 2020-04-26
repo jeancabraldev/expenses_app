@@ -1,8 +1,11 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expenses/states/login_state.dart';
+import 'package:expenses/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../widgets/month.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,7 +17,7 @@ class _HomePageState extends State<HomePage> {
   //Controllers
   PageController _pageViewController;
 
-  int currentPage = 1;
+  int currentPage = DateTime.now().month -1;
   bool bottomBar = true;
 
   Stream<QuerySnapshot> _query;
@@ -23,82 +26,93 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
 
-    _query = Firestore.instance
-        .collection('expenses')
-        .where("month", isEqualTo: currentPage + 1)
-        .snapshots();
-
     _pageViewController =
         PageController(initialPage: currentPage, viewportFraction: 0.4);
   }
 
   //Criando botões
-  Widget _bottomAction(IconData icon) {
+  Widget _bottomAction(IconData icon, Function callback) {
     return InkWell(
       child: Icon(icon, color: Colors.purple[900], size: 28),
-      onTap: () {},
+      onTap: callback,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      bottomNavigationBar: BottomAppBar(
-        notchMargin: 5,
-        shape: CircularNotchedRectangle(),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(0, 15, 0, 15),
-          child: Row(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _bottomAction(Icons.history),
-              _bottomAction(Icons.pie_chart),
-              SizedBox(
-                width: 50,
-              ),
-              _bottomAction(Icons.account_balance_wallet),
-              _bottomAction(Icons.settings)
-            ],
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.purple[900],
-        child: Icon(Icons.add),
-        onPressed: () {
-          Navigator.of(context).pushNamed('/add');
-        },
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            StreamBuilder<QuerySnapshot>(
-              stream: _query,
-              builder:
-                  (BuildContext context, AsyncSnapshot<QuerySnapshot> data) {
-                //Verificando se tem dados
-                if (data.hasData) {
-                  return Month(documents: data.data.documents);
-                }
-                return Container(
-                  height: MediaQuery.of(context).size.height - 154,
-                  child: Center(
-                    child: CircularProgressIndicator(),
+    return Consumer<LoginState>(
+      builder: (BuildContext context, LoginState state, Widget child) {
+        var user = Provider.of<LoginState>(context).currentUser();
+        _query = Firestore.instance
+            .collection('users')
+            .document(user.uid)
+            .collection('expenses')
+            .where("month", isEqualTo: currentPage + 1)
+            .snapshots();
+
+        return Scaffold(
+          bottomNavigationBar: BottomAppBar(
+            notchMargin: 5,
+            shape: CircularNotchedRectangle(),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(0, 15, 0, 15),
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _bottomAction(Icons.history, (){}),
+                  _bottomAction(Icons.pie_chart, (){}),
+                  SizedBox(
+                    width: 50,
                   ),
-                );
-              },
+                  _bottomAction(Icons.account_balance_wallet, (){}),
+                  _bottomAction(Icons.settings, (){
+                    Provider.of<LoginState>(context).logout();
+                  })
+                ],
+              ),
             ),
-            Container(
-              padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
-              height: 70,
-              color: Colors.black26.withOpacity(.03),
-              child: _selector(),
+          ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: Colors.purple[900],
+            child: Icon(Icons.add),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/add');
+            },
+          ),
+          body: SafeArea(
+            child: Column(
+              children: [
+                StreamBuilder<QuerySnapshot>(
+                  stream: _query,
+                  builder:
+                      (BuildContext context, AsyncSnapshot<QuerySnapshot> data) {
+                    //Verificando se tem dados
+                    if (data.hasData) {
+                      return Month(
+                        days: daysInMonth(currentPage + 1),
+                          documents: data.data.documents);
+                    }
+                    return Container(
+                      height: MediaQuery.of(context).size.height - 154,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    );
+                  },
+                ),
+                Container(
+                  padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
+                  height: 70,
+                  color: Colors.black26.withOpacity(.03),
+                  child: _selector(),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -139,8 +153,11 @@ class _HomePageState extends State<HomePage> {
         controller: _pageViewController,
         onPageChanged: (newPage) {
           setState(() {
+            var user = Provider.of<LoginState>(context).currentUser();
             currentPage = newPage;
             _query = Firestore.instance
+                .collection('users')
+                .document(user.uid)
                 .collection('expenses')
                 .where("month", isEqualTo: currentPage + 1)
                 .snapshots();

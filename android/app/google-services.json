@@ -52,11 +52,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "521102451799-k4269mkgppf281unehcsis7c69hjavi0.apps.googleusercontent.com",
+          "client_id": "521102451799-26ppsl1itbovilav0ielmt2ksnh9fccn.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.code4line.expenses",
-            "certificate_hash": "b21459ca16be9b653529fabda99a44acbb390f2b"
+            "certificate_hash": "df682fb2f0def450efe0886669b4ef43a3639d69"
           }
         },
         {
