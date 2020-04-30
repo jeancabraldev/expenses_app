@@ -60,9 +60,7 @@ class _MonthState extends State<Month> {
           ),
           Text(
             'Total despesas',
-            style: TextStyle(
-                fontStyle: FontStyle.italic
-            ),
+            style: TextStyle(fontStyle: FontStyle.italic),
           ),
         ],
       ),
@@ -93,7 +91,10 @@ class _MonthState extends State<Month> {
         style: TextStyle(fontStyle: FontStyle.italic),
       ),
       trailing: Container(
-        decoration: BoxDecoration(color: Colors.purple.withOpacity(0.2)),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: Color.fromRGBO(67, 97, 238, 0.2),
+        ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(8, 12, 8, 12),
           child: Text(
@@ -109,19 +110,19 @@ class _MonthState extends State<Month> {
   Widget _list() {
     return Expanded(
         child: ListView.separated(
-          itemCount: widget.categories.keys.length,
-          itemBuilder: (BuildContext context, index) {
-            var key = widget.categories.keys.elementAt(index);
-            var data = widget.categories[key];
-            return _item(
-                Icons.shopping_cart, key, 100 * data ~/ widget.total, data);
-          },
-          separatorBuilder: (BuildContext context, index) {
-            return Container(
-              color: Colors.black.withOpacity(.1),
-              height: 2,
-            );
-          },
-        ));
+      itemCount: widget.categories.keys.length,
+      itemBuilder: (BuildContext context, index) {
+        var key = widget.categories.keys.elementAt(index);
+        var data = widget.categories[key];
+        return _item(
+            Icons.shopping_cart, key, 100 * data ~/ widget.total, data);
+      },
+      separatorBuilder: (BuildContext context, index) {
+        return Container(
+          color: Colors.black.withOpacity(.1),
+          height: 2,
+        );
+      },
+    ));
   }
 }

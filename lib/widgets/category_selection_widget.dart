@@ -32,7 +32,7 @@ class CategoryWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                    color: selected ? Colors.purple : Colors.purple[900],
+                    color: selected ? Color.fromRGBO(67, 97, 237, 1) : Colors.purple[900],
                     width: selected ? 3 : 1),
               ),
               child: Icon(icon),

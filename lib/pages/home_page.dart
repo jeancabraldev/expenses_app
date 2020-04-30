@@ -1,10 +1,11 @@
 import 'dart:ui';
-
+import 'package:rect_getter/rect_getter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses/states/login_state.dart';
 import 'package:expenses/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../widgets/month.dart';
 
@@ -14,6 +15,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  var globalKey = RectGetter.createGlobalKey();
+  Rect buttonRect;
+
   //Controllers
   PageController _pageViewController;
 
@@ -33,7 +37,7 @@ class _HomePageState extends State<HomePage> {
   //Criando botões
   Widget _bottomAction(IconData icon, Function callback) {
     return InkWell(
-      child: Icon(icon, color: Colors.purple[900], size: 28),
+      child: Icon(icon, color: Color.fromRGBO(75, 0, 130, 1), size: 28),
       onTap: callback,
     );
   }
@@ -60,13 +64,13 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _bottomAction(Icons.history, (){}),
+                  _bottomAction(FontAwesomeIcons.chartLine, (){}),
                   _bottomAction(Icons.pie_chart, (){}),
                   SizedBox(
                     width: 50,
                   ),
                   _bottomAction(Icons.account_balance_wallet, (){}),
-                  _bottomAction(Icons.settings, (){
+                  _bottomAction(FontAwesomeIcons.signOutAlt, (){
                     Provider.of<LoginState>(context).logout();
                   })
                 ],
@@ -74,12 +78,17 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          floatingActionButton: FloatingActionButton(
-            backgroundColor: Colors.purple[900],
-            child: Icon(Icons.add),
-            onPressed: () {
-              Navigator.of(context).pushNamed('/add');
-            },
+          floatingActionButton: RectGetter(
+            key: globalKey,
+            child: FloatingActionButton(
+              backgroundColor: Color.fromRGBO(9, 31, 146, 1),
+              child: Icon(Icons.add),
+              onPressed: () {
+                buttonRect = RectGetter.getRectFromKey(globalKey);
+                print(buttonRect);
+                Navigator.of(context).pushNamed('/add', arguments: buttonRect);
+              },
+            ),
           ),
           body: SafeArea(
             child: Column(
@@ -122,7 +131,7 @@ class _HomePageState extends State<HomePage> {
 
     //Destacando o mês selecionado
     final selected = TextStyle(
-        color: Colors.purple[900], fontSize: 18, fontWeight: FontWeight.bold);
+        color: Color.fromRGBO(75, 0, 130, 1), fontSize: 18, fontWeight: FontWeight.bold);
     //Desfacando os meses que não estão selecionados
     final unSelected =
         TextStyle(fontSize: 16, color: Colors.black26.withOpacity(.2));

@@ -8,6 +8,10 @@ import 'package:provider/provider.dart';
 import '../widgets/category_selection_widget.dart';
 
 class AddPage extends StatefulWidget {
+  final Rect buttonRect;
+
+  const AddPage({Key key, this.buttonRect}) : super(key: key);
+
   @override
   _AddPageState createState() => _AddPageState();
 }
@@ -18,36 +22,44 @@ class _AddPageState extends State<AddPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Text(
-          'Categorias',
-          style: TextStyle(color: Colors.purple[900]),
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(
-              Icons.close,
-              color: Colors.purple[900],
+    return Stack(
+      children: <Widget>[
+        Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Categorias',
+              style: TextStyle(color: Colors.purple[900]),
             ),
-            onPressed: () => Navigator.of(context).pop(),
-          )
-        ],
-      ),
-      body: _body(),
+            actions: <Widget>[
+              IconButton(
+                icon: Icon(
+                  Icons.close,
+                  color: Colors.purple[900],
+                ),
+                onPressed: () => Navigator.of(context).pop(),
+              )
+            ],
+          ),
+          body: _body(),
+        ),
+        _submit()
+      ],
     );
   }
 
   Widget _body() {
+    var height = MediaQuery.of(context).size.height;
     return Column(
       children: <Widget>[
         _categorySelector(),
         _currentValue(),
         _numPad(),
-        _submit()
+        SizedBox(
+          height: height - widget.buttonRect.top,
+        ),
       ],
     );
   }
@@ -163,42 +175,48 @@ class _AddPageState extends State<AddPage> {
   }
 
   Widget _submit() {
-    return Builder(
-      builder: (BuildContext context) {
-        return Container(
-          height: 60,
-          width: double.infinity,
-          decoration: BoxDecoration(color: Colors.purple[900]),
-          child: MaterialButton(
-            child: Text(
-              'Adicionar despesa',
-              style: TextStyle(color: Colors.white, fontSize: 20),
+    return Positioned(
+      top: widget.buttonRect.top,
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Builder(
+        builder: (BuildContext context) {
+          return Container(
+//            height: widget.buttonRect.top,
+//            width: double.infinity,
+            decoration: BoxDecoration(color: Colors.purple[900]),
+            child: MaterialButton(
+              child: Text(
+                'Adicionar despesa',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              onPressed: () {
+                var user = Provider.of<LoginState>(context).currentUser();
+                //Salvando valores
+                if (value > 0 && category != null) {
+                  Firestore.instance
+                      .collection('users')
+                      .document(user.uid)
+                      .collection('expenses')
+                      .document()
+                      .setData({
+                    'category': category,
+                    'value': value,
+                    'month': DateTime.now().month,
+                    'day': DateTime.now().day,
+                  });
+                  Navigator.of(context).pop();
+                } else {
+                  Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text('Selecione uma categoria e informe um valor'),
+                  ));
+                }
+              },
             ),
-            onPressed: () {
-              var user = Provider.of<LoginState>(context).currentUser();
-              //Salvando valores
-              if (value > 0 && category != null) {
-                Firestore.instance
-                    .collection('users')
-                    .document(user.uid)
-                    .collection('expenses')
-                    .document()
-                    .setData({
-                  'category': category,
-                  'value': value,
-                  'month': DateTime.now().month,
-                  'day': DateTime.now().day,
-                });
-                Navigator.of(context).pop();
-              } else {
-                Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Text('Selecione uma categoria e informe um valor'),
-                ));
-              }
-            },
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

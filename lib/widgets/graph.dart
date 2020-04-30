@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 
@@ -47,7 +45,7 @@ class _GraphState extends State<Graph> {
     List<Series<double, num>> series = [
       Series<double, int>(
         id: 'Gasto',
-        colorFn: (_, __) => MaterialPalette.purple.shadeDefault,
+        colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
         domainFn: (value, index) => index,
         measureFn: (value, _) => value,
         data: widget.data,
