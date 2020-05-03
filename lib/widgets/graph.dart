@@ -1,17 +1,42 @@
 import 'package:charts_flutter/flutter.dart';
 import 'package:flutter/material.dart';
 
-class Graph extends StatefulWidget {
+class GraphPie extends StatefulWidget {
   final List<double> data;
 
-  const Graph({Key key, this.data}) : super(key: key);
+  const GraphPie({Key key, this.data}) : super(key: key);
 
   @override
-  _GraphState createState() => _GraphState();
+  _GraphPieState createState() => _GraphPieState();
 }
 
-class _GraphState extends State<Graph> {
+class _GraphPieState extends State<GraphPie> {
+  @override
+  Widget build(BuildContext context) {
+    List<Series<double, num>> series = [
+      Series<double, int>(
+        id: 'Gasto',
+        //colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
+        domainFn: (value, index) => index,
+        measureFn: (value, _) => value,
+        data: widget.data,
+        strokeWidthPxFn: (_, __) => 4,
+      )
+    ];
+    return PieChart(series);
+  }
+}
 
+class GraphLine extends StatefulWidget {
+  final List<double> data;
+
+  const GraphLine({Key key, this.data}) : super(key: key);
+
+  @override
+  _GraphLineState createState() => _GraphLineState();
+}
+
+class _GraphLineState extends State<GraphLine> {
   _onSelectionChanged(SelectionModel model) {
     final selectedDatum = model.selectedDatum;
 
@@ -45,7 +70,7 @@ class _GraphState extends State<Graph> {
     List<Series<double, num>> series = [
       Series<double, int>(
         id: 'Gasto',
-        colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
+        //colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
         domainFn: (value, index) => index,
         measureFn: (value, _) => value,
         data: widget.data,
@@ -64,14 +89,14 @@ class _GraphState extends State<Graph> {
       ],
       domainAxis: NumericAxisSpec(
           tickProviderSpec: StaticNumericTickProviderSpec([
-            TickSpec(0, label: '01'),
-            TickSpec(4, label: '05'),
-            TickSpec(9, label: '10'),
-            TickSpec(14, label: '15'),
-            TickSpec(19, label: '20'),
-            TickSpec(24, label: '25'),
-            TickSpec(29, label: '30'),
-          ])),
+        TickSpec(0, label: '01'),
+        TickSpec(4, label: '05'),
+        TickSpec(9, label: '10'),
+        TickSpec(14, label: '15'),
+        TickSpec(19, label: '20'),
+        TickSpec(24, label: '25'),
+        TickSpec(29, label: '30'),
+      ])),
       primaryMeasureAxis: NumericAxisSpec(
         tickProviderSpec: BasicNumericTickProviderSpec(
           desiredTickCount: 4,

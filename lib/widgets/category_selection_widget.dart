@@ -1,3 +1,4 @@
+import 'package:expenses/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class CategorySelectionWidget extends StatefulWidget {
@@ -32,10 +33,10 @@ class CategoryWidget extends StatelessWidget {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
-                    color: selected ? Color.fromRGBO(67, 97, 237, 1) : Colors.purple[900],
+                    color: selected ? ColorsLayout.secondaryColor() : ColorsLayout.primaryColor(),
                     width: selected ? 3 : 1),
               ),
-              child: Icon(icon),
+              child: Icon(icon, color: ColorsLayout.iconColor(),),
             ),
             Text(name)
           ],

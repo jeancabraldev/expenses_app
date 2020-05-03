@@ -1,14 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expenses/pages/details_page.dart';
+import 'package:expenses/utils/colors.dart';
 import 'package:flutter/material.dart';
 import '../widgets/graph.dart';
+
+enum GraphType { LINES, PIE }
 
 class Month extends StatefulWidget {
   final List<DocumentSnapshot> documents;
   final double total;
   final List<double> perDay;
   final Map<String, double> categories;
+  final GraphType graphType;
+  final int month;
 
-  Month({Key key, this.documents, days})
+  Month({Key key, @required this.month, this.graphType, this.documents, days})
       : total = documents.map((doc) => doc['value']).fold(0.0, (a, b) => a + b),
         perDay = List.generate(days, (int index) {
           return documents
@@ -69,15 +75,25 @@ class _MonthState extends State<Month> {
 
   //Gráfico
   Widget _graph() {
-    return Container(
-      height: 160,
-      child: Graph(data: widget.perDay),
-    );
+    if (widget.graphType == GraphType.LINES) {
+      return Container(
+        height: 160,
+        child: GraphLine(data: widget.perDay),
+      );
+    } else {
+      var perCategory = widget.categories.keys
+          .map((name) => widget.categories[name] / widget.total);
+      return Container(height: 160, child: GraphPie(data: widget.perDay));
+    }
   }
 
   //Itens da lista
   Widget _item(IconData icon, String name, int percent, double value) {
     return ListTile(
+      onTap: () {
+        Navigator.of(context).pushNamed('/details',
+            arguments: DetailsParams(name, widget.month));
+      },
       leading: Icon(
         icon,
         size: 32,
@@ -93,7 +109,7 @@ class _MonthState extends State<Month> {
       trailing: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Color.fromRGBO(67, 97, 238, 0.2),
+          color: Color.fromRGBO(247, 127, 0, .8),
         ),
         child: Padding(
           padding: EdgeInsets.fromLTRB(8, 12, 8, 12),

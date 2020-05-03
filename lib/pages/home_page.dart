@@ -1,4 +1,6 @@
 import 'dart:ui';
+import 'package:expenses/pages/add_page.dart';
+import 'package:expenses/widgets/page_transition.dart';
 import 'package:rect_getter/rect_getter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses/states/login_state.dart';
@@ -8,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
 import '../widgets/month.dart';
+import '../utils/colors.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -21,10 +24,11 @@ class _HomePageState extends State<HomePage> {
   //Controllers
   PageController _pageViewController;
 
-  int currentPage = DateTime.now().month -1;
+  int currentPage = DateTime.now().month - 1;
   bool bottomBar = true;
 
   Stream<QuerySnapshot> _query;
+  GraphType currentType = GraphType.LINES;
 
   @override
   void initState() {
@@ -37,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   //Criando botões
   Widget _bottomAction(IconData icon, Function callback) {
     return InkWell(
-      child: Icon(icon, color: Color.fromRGBO(75, 0, 130, 1), size: 28),
+      child: Icon(icon, color: ColorsLayout.iconColor(), size: 28),
       onTap: callback,
     );
   }
@@ -64,29 +68,45 @@ class _HomePageState extends State<HomePage> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _bottomAction(FontAwesomeIcons.chartLine, (){}),
-                  _bottomAction(Icons.pie_chart, (){}),
+                  _bottomAction(FontAwesomeIcons.chartLine, () {
+                    setState(() {
+                      currentType = GraphType.LINES;
+                    });
+                  }),
+                  _bottomAction(Icons.pie_chart, () {
+                    setState(() {
+                      currentType = GraphType.PIE;
+                    });
+                  }),
                   SizedBox(
                     width: 50,
                   ),
-                  _bottomAction(Icons.account_balance_wallet, (){}),
-                  _bottomAction(FontAwesomeIcons.signOutAlt, (){
+                  _bottomAction(Icons.account_balance_wallet, () {}),
+                  _bottomAction(FontAwesomeIcons.signOutAlt, () {
                     Provider.of<LoginState>(context).logout();
                   })
                 ],
               ),
             ),
           ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
           floatingActionButton: RectGetter(
             key: globalKey,
             child: FloatingActionButton(
-              backgroundColor: Color.fromRGBO(9, 31, 146, 1),
+              backgroundColor: ColorsLayout.primaryColor(),
               child: Icon(Icons.add),
               onPressed: () {
                 buttonRect = RectGetter.getRectFromKey(globalKey);
-                print(buttonRect);
-                Navigator.of(context).pushNamed('/add', arguments: buttonRect);
+
+                var pageT = PageTransition(
+                  backgound: widget,
+                  page: AddPage(
+                    buttonRect: buttonRect,
+                  ),
+                );
+
+                Navigator.of(context).push(pageT);
               },
             ),
           ),
@@ -95,13 +115,16 @@ class _HomePageState extends State<HomePage> {
               children: [
                 StreamBuilder<QuerySnapshot>(
                   stream: _query,
-                  builder:
-                      (BuildContext context, AsyncSnapshot<QuerySnapshot> data) {
+                  builder: (BuildContext context,
+                      AsyncSnapshot<QuerySnapshot> data) {
                     //Verificando se tem dados
                     if (data.hasData) {
                       return Month(
                         days: daysInMonth(currentPage + 1),
-                          documents: data.data.documents);
+                        documents: data.data.documents,
+                        graphType: currentType,
+                        month: currentPage,
+                      );
                     }
                     return Container(
                       height: MediaQuery.of(context).size.height - 154,
@@ -114,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: EdgeInsets.fromLTRB(0, 0, 0, 25),
                   height: 70,
-                  color: Colors.black26.withOpacity(.03),
+                  color: Colors.transparent,
                   child: _selector(),
                 ),
               ],
@@ -131,7 +154,9 @@ class _HomePageState extends State<HomePage> {
 
     //Destacando o mês selecionado
     final selected = TextStyle(
-        color: Color.fromRGBO(75, 0, 130, 1), fontSize: 18, fontWeight: FontWeight.bold);
+        color: ColorsLayout.primaryTextColor(),
+        fontSize: 18,
+        fontWeight: FontWeight.bold);
     //Desfacando os meses que não estão selecionados
     final unSelected =
         TextStyle(fontSize: 16, color: Colors.black26.withOpacity(.2));

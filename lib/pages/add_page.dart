@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses/states/login_state.dart';
+import 'package:expenses/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,34 +17,68 @@ class AddPage extends StatefulWidget {
   _AddPageState createState() => _AddPageState();
 }
 
-class _AddPageState extends State<AddPage> {
+class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
+  AnimationController _animationController;
+  Animation _buttonAnimation;
+  Animation _pageAnimation;
   String category;
   int value = 0;
 
   @override
+  void initState() {
+    super.initState();
+    _animationController =
+        AnimationController(vsync: this, duration: Duration(milliseconds: 750));
+
+    _buttonAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+        CurvedAnimation(
+            parent: _animationController, curve: Curves.fastOutSlowIn));
+
+    _pageAnimation = Tween<double>(begin: -1, end: 1.0).animate(CurvedAnimation(
+        parent: _animationController, curve: Curves.fastOutSlowIn));
+
+    _animationController.addListener(() {
+      setState(() {});
+    });
+
+    _animationController.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed) {
+        Navigator.of(context).pop();
+      }
+    });
+
+    _animationController.forward();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    var height = MediaQuery.of(context).size.height;
     return Stack(
       children: <Widget>[
-        Scaffold(
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            title: Text(
-              'Categorias',
-              style: TextStyle(color: Colors.purple[900]),
+        Transform.translate(
+          offset: Offset(0, height * (1 - _pageAnimation.value)),
+          child: Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              title: Text(
+                '',
+                style: TextStyle(
+                    color: Color.fromRGBO(30, 150, 252, 1), fontSize: 22),
+              ),
+              actions: <Widget>[
+                IconButton(
+                  icon: Icon(
+                    Icons.close,
+                    color: ColorsLayout.primaryTextColor(),
+                  ),
+                  onPressed: () => _animationController.reverse(),
+                )
+              ],
             ),
-            actions: <Widget>[
-              IconButton(
-                icon: Icon(
-                  Icons.close,
-                  color: Colors.purple[900],
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-              )
-            ],
+            body: _body(),
           ),
-          body: _body(),
         ),
         _submit()
       ],
@@ -77,7 +112,7 @@ class _AddPageState extends State<AddPage> {
           'Fast Food': Icons.fastfood,
           'Contas': Icons.account_balance_wallet,
           'Viagens': Icons.airplanemode_active,
-          'Eletrônicos': Icons.phonelink,
+          'Eletronicos': Icons.phonelink,
           'Transporte': Icons.directions_bus,
           'Bares': Icons.local_bar,
           'Combustível': Icons.local_gas_station,
@@ -99,7 +134,10 @@ class _AddPageState extends State<AddPage> {
       padding: EdgeInsets.symmetric(vertical: 32),
       child: Text('R\$ ${realValue.toStringAsFixed(2)}',
           style: TextStyle(
-              fontSize: 48, fontWeight: FontWeight.w500, color: Colors.purple)),
+            fontSize: 48,
+            fontWeight: FontWeight.w500,
+            color: Color.fromRGBO(53, 53, 53, 1),
+          )),
     );
   }
 
@@ -175,48 +213,69 @@ class _AddPageState extends State<AddPage> {
   }
 
   Widget _submit() {
-    return Positioned(
-      top: widget.buttonRect.top,
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Builder(
-        builder: (BuildContext context) {
-          return Container(
+    if (_animationController.value < 1) {
+      var buttonWidth = widget.buttonRect.right - widget.buttonRect.left;
+      var width = MediaQuery.of(context).size.width;
+      return Positioned(
+        top: widget.buttonRect.top,
+        left: widget.buttonRect.left * (1 - _buttonAnimation.value),
+        right: (width - widget.buttonRect.right) * (1 - _buttonAnimation.value),
+        bottom:
+            (MediaQuery.of(context).size.height - widget.buttonRect.bottom) *
+                (1 - _buttonAnimation.value),
+        child: Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(
+                  buttonWidth * (1 - _buttonAnimation.value)),
+              color: Color.fromRGBO(30, 150, 252, 1)),
+        ),
+      );
+    } else {
+      return Positioned(
+        top: widget.buttonRect.top,
+        bottom: 0,
+        left: 0,
+        right: 0,
+        child: Builder(
+          builder: (BuildContext context) {
+            return Container(
 //            height: widget.buttonRect.top,
 //            width: double.infinity,
-            decoration: BoxDecoration(color: Colors.purple[900]),
-            child: MaterialButton(
-              child: Text(
-                'Adicionar despesa',
-                style: TextStyle(color: Colors.white, fontSize: 20),
+              decoration: BoxDecoration(color: Color.fromRGBO(30, 150, 252, 1)),
+              child: MaterialButton(
+                child: Text(
+                  'Adicionar despesa',
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                onPressed: () {
+                  var user = Provider.of<LoginState>(context).currentUser();
+                  //Salvando valores
+                  if (value > 0 && category != null) {
+                    Firestore.instance
+                        .collection('users')
+                        .document(user.uid)
+                        .collection('expenses')
+                        .document()
+                        .setData({
+                      'category': category,
+                      'value': value,
+                      'month': DateTime.now().month,
+                      'day': DateTime.now().day,
+                    });
+                    Navigator.of(context).pop();
+                  } else {
+                    Scaffold.of(context).showSnackBar(SnackBar(
+                      content:
+                          Text('Selecione uma categoria e informe um valor'),
+                    ));
+                  }
+                },
               ),
-              onPressed: () {
-                var user = Provider.of<LoginState>(context).currentUser();
-                //Salvando valores
-                if (value > 0 && category != null) {
-                  Firestore.instance
-                      .collection('users')
-                      .document(user.uid)
-                      .collection('expenses')
-                      .document()
-                      .setData({
-                    'category': category,
-                    'value': value,
-                    'month': DateTime.now().month,
-                    'day': DateTime.now().day,
-                  });
-                  Navigator.of(context).pop();
-                } else {
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text('Selecione uma categoria e informe um valor'),
-                  ));
-                }
-              },
-            ),
-          );
-        },
-      ),
-    );
+            );
+          },
+        ),
+      );
+    }
   }
 }
