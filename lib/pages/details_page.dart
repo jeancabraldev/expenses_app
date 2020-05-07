@@ -64,7 +64,7 @@ class _DetailsPageState extends State<DetailsPage> {
                               Icon(
                                 Icons.calendar_today,
                                 size: 40,
-                                color: ColorsLayout.secondaryColor(),
+                                color: ColorsLayout.categoryColorCards(),
                               ),
                               Positioned(
                                 left: 0,
@@ -98,7 +98,9 @@ class _DetailsPageState extends State<DetailsPage> {
                   );
                 }
                 return Center(
-                  child: CircularProgressIndicator(),
+                  child: CircularProgressIndicator(
+                    backgroundColor: ColorsLayout.categoryColorCards(),
+                  ),
                 );
               },
             ));

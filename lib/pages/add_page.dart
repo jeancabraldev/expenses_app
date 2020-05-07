@@ -120,7 +120,8 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
           'Cinema': Icons.local_movies,
           'Hospital': Icons.local_hospital,
           'Farmácia': Icons.local_pharmacy,
-          'Taxi': Icons.local_taxi
+          'Taxi': Icons.local_taxi,
+          'Conveniência': Icons.local_convenience_store
         },
         //Mostrando a categoria selecionada
         onValueChanged: (newCategory) => category = newCategory,
@@ -129,14 +130,14 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
   }
 
   Widget _currentValue() {
-    var realValue = value / 100.0;
+    var realValue = value / 100;
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 32),
       child: Text('R\$ ${realValue.toStringAsFixed(2)}',
           style: TextStyle(
             fontSize: 48,
             fontWeight: FontWeight.w500,
-            color: Color.fromRGBO(53, 53, 53, 1),
+            color: ColorsLayout.primaryTextColor(),
           )),
     );
   }
@@ -196,7 +197,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
               behavior: HitTestBehavior.opaque,
               onTap: () {
                 setState(() {
-                  value = value ~/ 10;
+                  value = value ~/ 10 + (value - value.toInt());
                 });
               },
               child: Container(
@@ -228,7 +229,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
           decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(
                   buttonWidth * (1 - _buttonAnimation.value)),
-              color: Color.fromRGBO(30, 150, 252, 1)),
+              color: ColorsLayout.primaryColor()),
         ),
       );
     } else {
@@ -242,13 +243,14 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
             return Container(
 //            height: widget.buttonRect.top,
 //            width: double.infinity,
-              decoration: BoxDecoration(color: Color.fromRGBO(30, 150, 252, 1)),
+              decoration: BoxDecoration(color: ColorsLayout.primaryColor()),
               child: MaterialButton(
                 child: Text(
                   'Adicionar despesa',
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () {
+                  var today = DateTime.now();
                   var user = Provider.of<LoginState>(context).currentUser();
                   //Salvando valores
                   if (value > 0 && category != null) {
@@ -259,16 +261,38 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
                         .document()
                         .setData({
                       'category': category,
-                      'value': value,
-                      'month': DateTime.now().month,
-                      'day': DateTime.now().day,
+                      'value': value / 100,
+                      'month': today.month,
+                      'day': today.day,
+                      'year': today.year,
                     });
                     Navigator.of(context).pop();
                   } else {
-                    Scaffold.of(context).showSnackBar(SnackBar(
-                      content:
-                          Text('Selecione uma categoria e informe um valor'),
-                    ));
+                    showDialog(
+                        barrierDismissible: false,
+                        context: context,
+                        builder: (context) => AlertDialog(
+                              title: Text(
+                                'Minhas Finanças',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                              content: Text(
+                                  'Para adicionar uma despesa é necessário '
+                                  'selecionar uma categoria e informar '
+                                  'um valor.'),
+                              actions: <Widget>[
+                                FlatButton(
+                                  child: Text('ok, entendi.',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          color: ColorsLayout.primaryColor(),
+                                          fontWeight: FontWeight.w600)),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                )
+                              ],
+                            ));
                   }
                 },
               ),

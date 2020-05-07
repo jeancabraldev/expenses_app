@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expenses/pages/details_page.dart';
 import 'package:expenses/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import '../widgets/graph.dart';
 
 enum GraphType { LINES, PIE }
@@ -43,11 +44,12 @@ class _MonthState extends State<Month> {
         children: [
           _expenses(),
           _graph(),
-          Container(
-            color: Colors.black.withOpacity(.1),
-            height: 10,
-          ),
-          _list(),
+//          Container(
+//            color: Colors.black.withOpacity(.1),
+//            height: 2,
+//          ),
+          _listCard()
+          //_list(),
         ],
       ),
     );
@@ -56,8 +58,20 @@ class _MonthState extends State<Month> {
   //Configurando total de gastos
   Widget _expenses() {
     return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20)),
+          gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: <Color>[
+                Color.fromRGBO(242, 242, 242, .2),
+                Color.fromRGBO(242, 242, 242, .9)
+              ]),
+          color: Colors.grey),
       width: MediaQuery.of(context).size.width,
-      padding: EdgeInsets.fromLTRB(0, 10, 0, 10),
+      padding: EdgeInsets.fromLTRB(0, 30, 0, 10),
       child: Column(
         children: [
           Text(
@@ -65,9 +79,12 @@ class _MonthState extends State<Month> {
             style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
           Text(
-            'Total despesas',
+            'Total das despesas',
             style: TextStyle(fontStyle: FontStyle.italic),
           ),
+          SizedBox(
+            height: 20,
+          )
         ],
       ),
     );
@@ -76,69 +93,102 @@ class _MonthState extends State<Month> {
   //Gráfico
   Widget _graph() {
     if (widget.graphType == GraphType.LINES) {
-      return Container(
-        height: 160,
-        child: GraphLine(data: widget.perDay),
+      return Padding(
+        padding: const EdgeInsets.all(3.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            //color: Color.fromRGBO(242, 242, 242, .4),
+          ),
+          height: 180,
+          padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+          child: GraphLine(data: widget.perDay),
+        ),
       );
     } else {
       var perCategory = widget.categories.keys
           .map((name) => widget.categories[name] / widget.total);
-      return Container(height: 160, child: GraphPie(data: widget.perDay));
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            //color: Color.fromRGBO(242, 242, 242, .4),
+          ),
+          height: 180,
+          padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+          child: GraphPie(data: widget.perDay),
+        ),
+      );
     }
   }
 
-  //Itens da lista
-  Widget _item(IconData icon, String name, int percent, double value) {
-    return ListTile(
-      onTap: () {
-        Navigator.of(context).pushNamed('/details',
-            arguments: DetailsParams(name, widget.month));
-      },
-      leading: Icon(
-        icon,
-        size: 32,
-      ),
-      title: Text(
-        name,
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
-      ),
-      subtitle: Text(
-        '$percent% das despesas',
-        style: TextStyle(fontStyle: FontStyle.italic),
-      ),
-      trailing: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Color.fromRGBO(247, 127, 0, .8),
-        ),
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(8, 12, 8, 12),
-          child: Text(
-            'R\$ $value',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
+  Widget _listCard() {
+    return Expanded(
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        shrinkWrap: false,
+        itemCount: widget.categories.keys.length,
+        itemBuilder: (BuildContext context, int index) {
+          var key = widget.categories.keys.elementAt(index);
+          var data = widget.categories[key];
+          return _cardList(
+              FontAwesomeIcons.gift, key, 100 * data ~/ widget.total, data);
+        },
       ),
     );
   }
 
-  //Lista de despesas
-  Widget _list() {
-    return Expanded(
-        child: ListView.separated(
-      itemCount: widget.categories.keys.length,
-      itemBuilder: (BuildContext context, index) {
-        var key = widget.categories.keys.elementAt(index);
-        var data = widget.categories[key];
-        return _item(
-            Icons.shopping_cart, key, 100 * data ~/ widget.total, data);
+  Widget _cardList(IconData icon, String name, int percent, double value) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).pushNamed('/details',
+            arguments: DetailsParams(name, widget.month));
       },
-      separatorBuilder: (BuildContext context, index) {
-        return Container(
-          color: Colors.black.withOpacity(.1),
-          height: 2,
-        );
-      },
-    ));
+      child: Card(
+        elevation: 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)
+        ),
+        child: Container(
+          width: MediaQuery.of(context).size.width - 8,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  //Icon(icon),
+                  Text(
+                    name,
+                    style: TextStyle(
+                        color: ColorsLayout.categoryColorCards(),
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Text(
+                'R\$ $value',
+                style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500),
+              ),
+              SizedBox(
+                height: 5,
+              ),
+              Text(
+                '$percent% das despesas',
+                style: TextStyle(
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   //Criando botões
   Widget _bottomAction(IconData icon, Function callback) {
     return InkWell(
-      child: Icon(icon, color: ColorsLayout.iconColor(), size: 28),
+      child: Icon(icon, color: ColorsLayout.iconColor(), size: 24),
       onTap: callback,
     );
   }
@@ -59,6 +59,7 @@ class _HomePageState extends State<HomePage> {
             .snapshots();
 
         return Scaffold(
+          backgroundColor: ColorsLayout.backgroundColorWhite(),
           bottomNavigationBar: BottomAppBar(
             notchMargin: 5,
             shape: CircularNotchedRectangle(),
@@ -98,15 +99,7 @@ class _HomePageState extends State<HomePage> {
               child: Icon(Icons.add),
               onPressed: () {
                 buttonRect = RectGetter.getRectFromKey(globalKey);
-
-                var pageT = PageTransition(
-                  backgound: widget,
-                  page: AddPage(
-                    buttonRect: buttonRect,
-                  ),
-                );
-
-                Navigator.of(context).push(pageT);
+                Navigator.of(context).pushNamed('/add', arguments: buttonRect);
               },
             ),
           ),
@@ -118,18 +111,33 @@ class _HomePageState extends State<HomePage> {
                   builder: (BuildContext context,
                       AsyncSnapshot<QuerySnapshot> data) {
                     //Verificando se tem dados
-                    if (data.hasData) {
-                      return Month(
-                        days: daysInMonth(currentPage + 1),
-                        documents: data.data.documents,
-                        graphType: currentType,
-                        month: currentPage,
-                      );
+                    if (data.connectionState == ConnectionState.active) {
+                      if (data.data.documents.length > 0) {
+                        return Month(
+                          days: daysInMonth(currentPage + 1),
+                          documents: data.data.documents,
+                          graphType: currentType,
+                          month: currentPage,
+                        );
+                      } else {
+                        return Expanded(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Image.asset('assets/images/not_found.png'),
+                              SizedBox(height: 80),
+                              Text('Adicione uma despesa para começar!')
+                            ],
+                          ),
+                        );
+                      }
                     }
                     return Container(
-                      height: MediaQuery.of(context).size.height - 154,
+                      height: MediaQuery.of(context).size.height - 148,
                       child: Center(
-                        child: CircularProgressIndicator(),
+                        child: CircularProgressIndicator(
+                          backgroundColor: ColorsLayout.categoryColorCards(),
+                        ),
                       ),
                     );
                   },

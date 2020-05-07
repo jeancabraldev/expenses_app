@@ -16,7 +16,6 @@ class _GraphPieState extends State<GraphPie> {
     List<Series<double, num>> series = [
       Series<double, int>(
         id: 'Gasto',
-        //colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
         domainFn: (value, index) => index,
         measureFn: (value, _) => value,
         data: widget.data,
@@ -70,7 +69,7 @@ class _GraphLineState extends State<GraphLine> {
     List<Series<double, num>> series = [
       Series<double, int>(
         id: 'Gasto',
-        //colorFn: (_, __) => MaterialPalette.blue.shadeDefault,
+        //colorFn: (_, __) => MaterialPalette.gray.shadeDefault,
         domainFn: (value, index) => index,
         measureFn: (value, _) => value,
         data: widget.data,
