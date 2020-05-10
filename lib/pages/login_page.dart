@@ -1,6 +1,5 @@
 import 'package:expenses/states/login_state.dart';
 import 'package:expenses/utils/colors.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,13 +13,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  TapGestureRecognizer _recognizer1;
-  TapGestureRecognizer _recognizer2;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: <Widget>[

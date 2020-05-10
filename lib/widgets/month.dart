@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expenses/pages/details_page.dart';
+import 'package:expenses/pages/details_page_container.dart';
 import 'package:expenses/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -41,16 +41,7 @@ class _MonthState extends State<Month> {
   Widget build(BuildContext context) {
     return Expanded(
       child: Column(
-        children: [
-          _expenses(),
-          _graph(),
-//          Container(
-//            color: Colors.black.withOpacity(.1),
-//            height: 2,
-//          ),
-          _listCard()
-          //_list(),
-        ],
+        children: [_expenses(), _graph(), _listCard()],
       ),
     );
   }
@@ -60,8 +51,8 @@ class _MonthState extends State<Month> {
     return Container(
       decoration: BoxDecoration(
           borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20)),
+              bottomLeft: Radius.circular(40),
+              bottomRight: Radius.circular(40)),
           gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
@@ -80,7 +71,10 @@ class _MonthState extends State<Month> {
           ),
           Text(
             'Total das despesas',
-            style: TextStyle(fontStyle: FontStyle.italic),
+            style: TextStyle(
+              fontStyle: FontStyle.italic,
+              color: Colors.black38
+            ),
           ),
           SizedBox(
             height: 20,
@@ -147,11 +141,9 @@ class _MonthState extends State<Month> {
       },
       child: Card(
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20)
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
-          width: MediaQuery.of(context).size.width - 8,
+          width: MediaQuery.of(context).size.width - 38,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[

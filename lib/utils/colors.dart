@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class ColorsLayout {
   //primary color
   static Color primaryColor([double opacity = 1]) =>
-      Color.fromRGBO(36, 123, 160, opacity);
+      Colors.blue;
 
   //secondary color
   static Color secondaryColor([double opacity = 1]) =>

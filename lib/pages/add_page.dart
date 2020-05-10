@@ -1,5 +1,4 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expenses/states/login_state.dart';
+import 'package:expenses/repository/expenses_repository.dart';
 import 'package:expenses/utils/colors.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +22,8 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
   Animation _pageAnimation;
   String category;
   int value = 0;
+  String dateStr = 'o que?';
+  DateTime date = DateTime.now();
 
   @override
   void initState() {
@@ -62,10 +63,29 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
               automaticallyImplyLeading: false,
               backgroundColor: Colors.transparent,
               elevation: 0,
-              title: Text(
-                '',
-                style: TextStyle(
-                    color: Color.fromRGBO(30, 150, 252, 1), fontSize: 22),
+              title: GestureDetector(
+                onTap: () {
+                  showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate:
+                        DateTime.now().subtract(Duration(hours: 24 * 30)),
+                    lastDate: DateTime.now(),
+                  ).then((newDate) {
+                    if (newDate != null) {
+                      setState(() {
+                        date = newDate;
+                        dateStr =
+                            '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year.toString()}';
+                      });
+                    }
+                  });
+                },
+                child: Text(
+                  'Categoria ($dateStr)',
+                  style: TextStyle(
+                      color: Color.fromRGBO(30, 150, 252, 1), fontSize: 22),
+                ),
               ),
               actions: <Widget>[
                 IconButton(
@@ -112,7 +132,7 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
           'Fast Food': Icons.fastfood,
           'Contas': Icons.account_balance_wallet,
           'Viagens': Icons.airplanemode_active,
-          'Eletronicos': Icons.phonelink,
+          'Eletrônicos': Icons.phonelink,
           'Transporte': Icons.directions_bus,
           'Bares': Icons.local_bar,
           'Combustível': Icons.local_gas_station,
@@ -121,7 +141,8 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
           'Hospital': Icons.local_hospital,
           'Farmácia': Icons.local_pharmacy,
           'Taxi': Icons.local_taxi,
-          'Conveniência': Icons.local_convenience_store
+          'Conveniência': Icons.local_convenience_store,
+          'Manutenção': Icons.build
         },
         //Mostrando a categoria selecionada
         onValueChanged: (newCategory) => category = newCategory,
@@ -203,7 +224,11 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
               child: Container(
                 height: height,
                 child: Center(
-                  child: Icon(Icons.backspace, color: Colors.grey, size: 28),
+                  child: Icon(
+                    Icons.backspace,
+                    color: Colors.grey,
+                    size: 28,
+                  ),
                 ),
               ),
             ),
@@ -227,9 +252,10 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
         child: Container(
           width: double.infinity,
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(
-                  buttonWidth * (1 - _buttonAnimation.value)),
-              color: ColorsLayout.primaryColor()),
+            borderRadius: BorderRadius.circular(
+                buttonWidth * (1 - _buttonAnimation.value)),
+            color: ColorsLayout.primaryColor(),
+          ),
         ),
       );
     } else {
@@ -250,22 +276,10 @@ class _AddPageState extends State<AddPage> with SingleTickerProviderStateMixin {
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 onPressed: () {
-                  var today = DateTime.now();
-                  var user = Provider.of<LoginState>(context).currentUser();
+                  var db = Provider.of<ExpensesRepository>(context);
                   //Salvando valores
                   if (value > 0 && category != null) {
-                    Firestore.instance
-                        .collection('users')
-                        .document(user.uid)
-                        .collection('expenses')
-                        .document()
-                        .setData({
-                      'category': category,
-                      'value': value / 100,
-                      'month': today.month,
-                      'day': today.day,
-                      'year': today.year,
-                    });
+                    db.addExpense(category, value, date);
                     Navigator.of(context).pop();
                   } else {
                     showDialog(

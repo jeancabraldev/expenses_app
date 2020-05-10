@@ -1,11 +1,13 @@
 import 'package:expenses/pages/add_page.dart';
+import 'package:expenses/repository/expenses_repository.dart';
 import 'package:expenses/widgets/page_transition.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import './pages/details_page.dart';
+import './pages/details_page_container.dart';
 import './pages/home_page.dart';
 import './pages/login_page.dart';
+import './pages/settings_page.dart';
 import './states/login_state.dart';
 
 /*Paleta de cores:
@@ -17,50 +19,48 @@ void main() => runApp(MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<LoginState>(
-      builder: (BuildContext context) => LoginState(),
-      //builder: (BuildContext context ) => LoginState(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<LoginState>(
+          create: (_) => LoginState(),
+          //builder: (BuildContext context ) => LoginState(),
+        ),
+        ProxyProvider(builder: (_, LoginState value, __) {
+          if (value.isLoggedIn()) {
+            return ExpensesRepository(value.currentUser().uid);
+          }
+          return null;
+        })
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+          primarySwatch: Colors.purple,
           fontFamily: 'Montserrat',
           textTheme: TextTheme(
-            body1: TextStyle(fontSize: 13),
-            caption: TextStyle(fontSize: 16)
-          ),
+              body1: TextStyle(fontSize: 13), caption: TextStyle(fontSize: 16)),
         ),
         onGenerateRoute: (settings) {
-
           if (settings.name == '/details') {
-          DetailsParams params = settings.arguments;
+            DetailsParams params = settings.arguments;
             return MaterialPageRoute(builder: (BuildContext context) {
-              return DetailsPage(
+              return DetailsPageContainer(
                 params: params,
               );
             });
-          } else if(settings.name == '/add'){
+          } else if (settings.name == '/add') {
             Rect buttonReact = settings.arguments;
             return PageTransition(
-              page: AddPage(
-                buttonRect: buttonReact,
-              )
-            );
+                page: AddPage(
+              buttonRect: buttonReact,
+            ));
+          } else if (settings.name == '/settings') {
+            return MaterialPageRoute(builder: (BuildContext context) {
+              return SettingsPage();
+            });
           }
           return null;
         },
-
-//        onGenerateRoute: (settings) {
-//          DetailsParams params = settings.arguments;
-//          if (settings.name == '/details') {
-//            return MaterialPageRoute(builder: (BuildContext context) {
-//              return DetailsPage(
-//                params: params,
-//              );
-//            });
-//          }
-//          return null;
-//        },
-
         routes: {
           '/': (BuildContext context) {
             var state = Provider.of<LoginState>(context);
